@@ -95,8 +95,13 @@ def to_geofeather(df, path, geom_columns=['geometry']):
     df = DataFrame(df.copy())
 
     # convert geometry fields to WKB
+    def safewkb(x):
+        if x is None:
+            return None
+        else:
+            return g.wkb
     for col in geom_columns:
-        df[col] = df[col].apply(lambda g: None if (g is None) else g.wkb)
+        df[col] = df[col].apply(safewkb)
 
     _to_geofeather(df, path, crs, geom_columns)
 
@@ -145,5 +150,10 @@ def from_geofeather(path, columns=None, geom_columns=['geometry']):
     gdf = GeoDataFrame(df, geometry=geom_columns.pop(1), crs=crs)
 
     # convert additional geometry columns
+    def safeload(x):
+        if x is None:
+            return None
+        else:
+            return shapely.wkb.loads(x,hex=True)
     for col in geom_columns:
-        gdf[col] = gdf[col].apply(lambda x: None if (x is None) else shapely.wkb.loads(x,hex=True))
+        gdf[col] = gdf[col].apply(safeload)
