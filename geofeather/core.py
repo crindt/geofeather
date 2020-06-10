@@ -150,7 +150,7 @@ def from_geofeather(path, columns=None, geom_columns=['geometry']):
         if x is None:
             return None
         else:
-            return loads(x,hex=True)
+            return loads(x)
 
     for col in geom_columns:
         df[col] = df[col].apply(safeload)
