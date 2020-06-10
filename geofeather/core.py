@@ -144,10 +144,6 @@ def from_geofeather(path, columns=None, geom_columns=['geometry']):
     df = df.rename(columns={"wkb": "geometry"})
 
     # decode the WKB geometry back to shapely objects
-    df.geometry = df.geometry.apply(lambda wkb: loads(wkb))
-
-    # create geodataframe with first geometry col
-    gdf = GeoDataFrame(df, geometry=geom_columns.pop(1), crs=crs)
 
     # convert additional geometry columns
     def safeload(x):
@@ -155,5 +151,10 @@ def from_geofeather(path, columns=None, geom_columns=['geometry']):
             return None
         else:
             return shapely.wkb.loads(x,hex=True)
+
     for col in geom_columns:
-        gdf[col] = gdf[col].apply(safeload)
+        df[col] = df[col].apply(safeload)
+
+    # create geodataframe with first geometry col as geometry
+    gdf = GeoDataFrame(df, geometry=geom_columns.pop(1), crs=crs)
+
