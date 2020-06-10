@@ -71,7 +71,7 @@ def _from_geofeather(path, columns, geom_columns):
             )
         )
 
-    return read_dataframe(path, columns=columns, geom_columns=geom_columns), crs
+    return read_dataframe(path, columns=columns), crs
 
 
 def to_geofeather(df, path, geom_columns=['geometry']):
