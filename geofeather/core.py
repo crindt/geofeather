@@ -96,7 +96,7 @@ def to_geofeather(df, path, geom_columns=['geometry']):
 
     # convert geometry fields to WKB
     for col in geom_columns:
-        df[col] = df[col].apply(lambda g: g.wkb)
+        df[col] = df[col].apply(lambda g: None if g is None else g.wkb)
 
     _to_geofeather(df, path, crs, geom_columns)
 
@@ -146,4 +146,4 @@ def from_geofeather(path, columns=None, geom_columns=['geometry']):
 
     # convert additional geometry columns
     for col in geom_columns:
-        gdf[col] = gdf[col].apply(lambda x: shapely.wkb.loads(x,hex=True))
+        gdf[col] = gdf[col].apply(lambda x: None if x is None else shapely.wkb.loads(x,hex=True))
