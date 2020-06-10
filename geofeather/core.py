@@ -99,7 +99,7 @@ def to_geofeather(df, path, geom_columns=['geometry']):
         if x is None:
             return None
         else:
-            return g.wkb
+            return x.wkb
     for col in geom_columns:
         df[col] = df[col].apply(safewkb)
 
