@@ -9,7 +9,7 @@ from pandas import DataFrame
 from shapely.wkb import loads
 
 
-def _to_geofeather(df, path, crs):
+def _to_geofeather(df, path, crs, geom_columns):
     """Serializes a pandas DataFrame to a feather file on disk.
     This also creates a .crs file with CRS information for this dataset.
 
@@ -36,7 +36,7 @@ def _to_geofeather(df, path, crs):
     df.to_feather(path)
 
 
-def _from_geofeather(path, columns=None):
+def _from_geofeather(path, columns, geom_columns):
     """Deserialize a pandas.DataFrame stored in a feather file.
 
     If the corresponding .crs file is found, it is used to set the CRS of
@@ -71,10 +71,10 @@ def _from_geofeather(path, columns=None):
             )
         )
 
-    return read_dataframe(path, columns=columns), crs
+    return read_dataframe(path, columns=columns, geom_columns=geom_columns), crs
 
 
-def to_geofeather(df, path):
+def to_geofeather(df, path, geom_columns=['geometry']):
     """Serializes a geopandas GeoDataFrame to a feather file on disk.
 
     IMPORTANT: feather format does not support a non-default index; call reset_index() before using this function.
@@ -94,13 +94,14 @@ def to_geofeather(df, path):
     crs = df.crs
     df = DataFrame(df.copy())
 
-    # convert geometry field to WKB
-    df.geometry = df.geometry.apply(lambda g: g.wkb)
+    # convert geometry fields to WKB
+    for col in geom_columns:
+        df[col] = df[col].apply(lambda g: g.wkb)
 
-    _to_geofeather(df, path, crs)
+    _to_geofeather(df, path, crs, geom_columns)
 
 
-def from_geofeather(path, columns=None):
+def from_geofeather(path, columns=None, geom_columns=['geometry']):
     """Deserialize a geopandas.GeoDataFrame stored in a feather file.
 
     This converts the internal WKB representation back into geometry.
@@ -140,4 +141,9 @@ def from_geofeather(path, columns=None):
     # decode the WKB geometry back to shapely objects
     df.geometry = df.geometry.apply(lambda wkb: loads(wkb))
 
-    return GeoDataFrame(df, geometry="geometry", crs=crs)
+    # create geodataframe with first geometry col
+    gdf = GeoDataFrame(df, geometry=geom_columns.pop(1), crs=crs)
+
+    # convert additional geometry columns
+    for col in geom_columns:
+        gdf[col] = gdf[col].apply(lambda x: shapely.wkb.loads(x,hex=True))
