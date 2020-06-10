@@ -156,5 +156,5 @@ def from_geofeather(path, columns=None, geom_columns=['geometry']):
         df[col] = df[col].apply(safeload)
 
     # create geodataframe with first geometry col as geometry
-    gdf = GeoDataFrame(df, geometry=geom_columns.pop(1), crs=crs)
-
+    return GeoDataFrame(df, geometry=geom_columns.pop(1), crs=crs)
+    
