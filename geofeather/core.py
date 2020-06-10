@@ -138,7 +138,7 @@ def from_geofeather(path, columns=None, geom_columns=['geometry']):
     if columns is not None and "wkb" not in columns:
         columns.append("wkb")
 
-    df, crs = _from_geofeather(path, columns=columns)
+    df, crs = _from_geofeather(path, columns=columns, geom_columns=geom_columns)
 
     # shim to support files created with geofeather 0.1.0
     df = df.rename(columns={"wkb": "geometry"})
